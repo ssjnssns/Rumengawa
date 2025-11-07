@@ -1,492 +1,78 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片时间水印工具</title>
+    <title>豌豆射手：绿植主题展示</title>
     <style>
+        /* 整体风格：绿植主题，美观简洁 */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            /* 柔和的浅绿色背景，模拟清新草地 */
+            background-color: #e6ffe6; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* 居上对齐 */
-            min-height: 100vh;
-            background-color: #f0f2f5;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            width: 90%;
-            max-width: 800px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 28px;
-            font-weight: 600;
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            display: block;
-            width: calc(100% - 24px);
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            background-color: #fdfdfd;
-            cursor: pointer;
-        }
-        input[type="file"]::-webkit-file-upload-button {
-            visibility: hidden;
-        }
-        input[type="file"]::before {
-            content: '选择图片';
-            display: inline-block;
-            background: linear-gradient(to bottom, #f9f9f9, #e3e3e3);
-            border: 1px solid #999;
-            border-radius: 6px;
-            padding: 8px 16px;
-            outline: none;
-            white-space: nowrap;
-            -webkit-user-select: none;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 15px;
-            color: #444;
-        }
-        input[type="file"]:hover::before {
-            border-color: black;
-        }
-        input[type="file"]:active::before {
-            background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin: 0 10px 10px 0; /* 留一点间距 */
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        #watermarkText {
-            width: calc(100% - 20px);
-            max-width: 300px;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        #outputContainer {
-            margin-top: 30px;
-            border: 1px dashed #ccc;
-            padding: 20px;
-            border-radius: 10px;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            background-color: #fafafa;
-            overflow: hidden; /* 防止图片溢出 */
-            position: relative;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
         }
 
-        #outputCanvas {
+        /* 图片展示卡片 */
+        .card {
+            background-color: white;
+            padding: 35px;
+            border-radius: 15px; /* 圆角边框更美观 */
+            /* 绿色系阴影，增加层次感和绿植主题的深度 */
+            box-shadow: 0 12px 25px rgba(76, 175, 80, 0.4); 
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px); /* 悬停效果，更生动 */
+        }
+
+        /* 标题样式 */
+        .card h1 {
+            color: #4CAF50; /* 鲜绿色，突出绿植主题 */
+            margin-bottom: 25px;
+            font-size: 2em;
+            letter-spacing: 1px;
+        }
+
+        /* 豌豆射手图片 */
+        .card img {
             max-width: 100%;
             height: auto;
-            display: block; /* 移除 canvas 下方可能存在的空白 */
-            border-radius: 8px;
-        }
-        
-        .controls {
-            display: flex;
-            flex-wrap: wrap; /* 按钮过多时换行 */
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .control-group {
-            margin: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .control-group label {
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #555;
-        }
-        .control-group input[type="number"],
-        .control-group input[type="text"],
-        .control-group select {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-            width: 120px;
-            max-width: 100%;
+            border-radius: 10px;
+            /* 围绕图片添加一个淡绿色的边框，呼应主题 */
+            border: 4px solid #81c784; 
+            display: block;
+            margin: 0 auto 20px;
         }
 
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px; /* 宽度 */
-            height: 24px; /* 高度 */
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px; /* 滑块高度 */
-            width: 16px; /* 滑块宽度 */
-            left: 4px; /* 初始左边距 */
-            bottom: 4px; /* 初始底部边距 */
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #2196F3; /* 选中时的颜色 */
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px #2196F3;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px); /* 滑块移动距离 (宽度 - 滑块宽度 - 2*边距) */
-        }
-
-        .datetime-picker-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .datetime-picker-group label {
-            margin-right: 10px;
-            font-size: 15px;
-            color: #555;
-            flex-shrink: 0;
-        }
-        .datetime-picker-group input[type="date"],
-        .datetime-picker-group input[type="time"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-right: 10px;
-            flex-grow: 1; /* 允许输入框增长 */
-            max-width: 150px;
-        }
-
-        .footer {
-            margin-top: 30px;
-            font-size: 14px;
-            color: #777;
+        /* 描述文字 */
+        .card p {
+            margin-top: 15px;
+            font-style: italic;
+            color: #666;
+            font-size: 1.1em;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>📸 图片时间水印工具</h1>
+    <div class="card">
+        <h1>🌱 豌豆射手 - 守护花园 🌱</h1>
         
-        <input type="file" id="imageInput" accept="image/*">
-        
-        <div class="datetime-picker-group">
-            <label for="useCurrentTime">使用当前时间:</label>
-            <label class="toggle-switch">
-                <input type="checkbox" id="useCurrentTime" checked>
-                <span class="slider"></span>
-            </label>
-            <input type="date" id="setDate" style="display: none;">
-            <input type="time" id="setTime" style="display: none;">
-        </div>
+        <img src="Https://i.meee.com.tw/N0oCRcP.jpg" alt="可爱的豌豆射手图片">
 
-        <div class="controls">
-            <div class="control-group">
-                <label for="watermarkText">自定义文字 (可选):</label>
-                <input type="text" id="watermarkText" placeholder="例如：我的美好瞬间">
-            </div>
-            <div class="control-group">
-                <label for="fontSize">字体大小 (px):</label>
-                <input type="number" id="fontSize" value="16" min="8" max="100">
-            </div>
-            <div class="control-group">
-                <label for="fontColor">字体颜色:</label>
-                <input type="text" id="fontColor" value="#FFFFFF" placeholder="#RRGGBB 或 color name">
-            </div>
-            <div class="control-group">
-                <label for="positionX">X轴偏移 (%):</label>
-                <input type="number" id="positionX" value="50" min="0" max="100">
-            </div>
-            <div class="control-group">
-                <label for="positionY">Y轴偏移 (%):</label>
-                <input type="number" id="positionY" value="95" min="0" max="100">
-            </div>
-            <div class="control-group">
-                <label for="alignment">文字对齐:</label>
-                <select id="alignment">
-                    <option value="center">居中</option>
-                    <option value="left">靠左</option>
-                    <option value="right">靠右</option>
-                </select>
-            </div>
-        </div>
-
-        <button id="addWatermarkBtn" disabled>添加水印并预览</button>
-        <button id="downloadBtn" disabled>下载带水印的图片</button>
+        <p>一发入魂，保卫绿色家园！</p>
     </div>
-
-    <div id="outputContainer">
-        <canvas id="outputCanvas"></canvas>
-        <p id="placeholderText">请选择一张图片开始</p>
-    </div>
-
-    <div class="footer">
-        <p>基于 HTML5 Canvas 和 JavaScript 构建，所有处理均在浏览器本地完成。</p>
-    </div>
-
-    <script>
-        const imageInput = document.getElementById('imageInput');
-        const useCurrentTimeToggle = document.getElementById('useCurrentTime');
-        const setDateInput = document.getElementById('setDate');
-        const setTimeInput = document.getElementById('setTime');
-        const watermarkTextCustom = document.getElementById('watermarkText');
-        const fontSizeInput = document.getElementById('fontSize');
-        const fontColorInput = document.getElementById('fontColor');
-        const positionXInput = document.getElementById('positionX');
-        const positionYInput = document.getElementById('positionY');
-        const alignmentSelect = document.getElementById('alignment');
-        const addWatermarkBtn = document.getElementById('addWatermarkBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const outputCanvas = document.getElementById('outputCanvas');
-        const ctx = outputCanvas.getContext('2d');
-        const placeholderText = document.getElementById('placeholderText');
-
-        let originalImage = null; // 用于存储原始图片对象
-
-        // 获取当前日期和时间并格式化
-        function getFormattedDateTime(dateObj) {
-            const year = dateObj.getFullYear();
-            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-            const day = dateObj.getDate().toString().padStart(2, '0');
-            const hours = dateObj.getHours().toString().padStart(2, '0');
-            const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-            return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-        }
-
-        // 初始化日期和时间选择器为当前时间
-        function initializeDateTimePickers() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const day = now.getDate().toString().padStart(2, '0');
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-
-            setDateInput.value = `${year}-${month}-${day}`;
-            setTimeInput.value = `${hours}:${minutes}`;
-        }
-        initializeDateTimePickers();
-
-        // 根据 useCurrentTime 切换自定义日期/时间的显示
-        useCurrentTimeToggle.addEventListener('change', () => {
-            if (useCurrentTimeToggle.checked) {
-                setDateInput.style.display = 'none';
-                setTimeInput.style.display = 'none';
-            } else {
-                setDateInput.style.display = 'inline-block';
-                setTimeInput.style.display = 'inline-block';
-            }
-            if (originalImage) {
-                addWatermark(); // 更改时间设置后立即更新预览
-            }
-        });
-
-        // 监听图片文件选择
-        imageInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        originalImage = img; // 保存原始图片
-                        placeholderText.style.display = 'none';
-                        addWatermarkBtn.disabled = false;
-                        addWatermark(); // 加载后立即添加水印
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                originalImage = null;
-                addWatermarkBtn.disabled = true;
-                downloadBtn.disabled = true;
-                ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-                placeholderText.style.display = 'block';
-                outputCanvas.style.width = 'auto'; // 清除预览尺寸
-                outputCanvas.style.height = 'auto';
-            }
-        });
-
-        // 添加水印核心逻辑
-        function addWatermark() {
-            if (!originalImage) {
-                return;
-            }
-
-            // 设置 Canvas 尺寸与图片一致
-            outputCanvas.width = originalImage.naturalWidth;
-            outputCanvas.height = originalImage.naturalHeight;
-
-            // 清除 Canvas 并绘制原始图片
-            ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-            ctx.drawImage(originalImage, 0, 0);
-
-            // 获取时间字符串
-            let dateTimeString;
-            if (useCurrentTimeToggle.checked) {
-                dateTimeString = getFormattedDateTime(new Date());
-            } else {
-                const dateVal = setDateInput.value;
-                const timeVal = setTimeInput.value;
-                if (dateVal && timeVal) {
-                    const customDate = new Date(`${dateVal}T${timeVal}:00`);
-                    dateTimeString = getFormattedDateTime(customDate);
-                } else {
-                    dateTimeString = "无效时间"; // 确保有默认值
-                }
-            }
-
-            // 获取自定义文字
-            const customText = watermarkTextCustom.value.trim();
-            let finalWatermarkText = dateTimeString;
-            if (customText) {
-                finalWatermarkText += ` ${customText}`; // 如果有自定义文字，加在日期后面
-            }
-
-            // 设置水印样式
-            const fontSize = parseInt(fontSizeInput.value) || 16;
-            const fontColor = fontColorInput.value || '#FFFFFF';
-            const alignment = alignmentSelect.value || 'center';
-            
-            // 计算字体大小，使其在不同分辨率图片上看起来差不多
-            // 假设一个基准宽度 (例如 1920px)，在这个宽度下，我们希望字体是 16px
-            // 那么实际字体大小 = (当前图片宽度 / 1920) * 期望字体大小
-            const dynamicFontSize = Math.max(8, (outputCanvas.width / 1920) * fontSize); // 最小8px防止过小
-
-            ctx.font = `${dynamicFontSize}px sans-serif`; // 字体设置
-            ctx.fillStyle = fontColor; // 颜色
-            ctx.textAlign = alignment; // 对齐方式
-            ctx.textBaseline = 'bottom'; // 文本基线设置为底部，方便定位
-
-            // 计算水印位置
-            const margin = dynamicFontSize; // 边距与字体大小相关
-            let x, y;
-            const positionX = parseInt(positionXInput.value) / 100;
-            const positionY = parseInt(positionYInput.value) / 100;
-
-            if (alignment === 'left') {
-                x = margin; // 距离左边距
-            } else if (alignment === 'right') {
-                x = outputCanvas.width - margin; // 距离右边距
-            } else { // center
-                x = outputCanvas.width * positionX; // 相对X轴百分比
-            }
-            y = outputCanvas.height * positionY; // 相对Y轴百分比
-
-            // 绘制水印
-            ctx.fillText(finalWatermarkText, x, y);
-
-            // 调整 canvas 预览大小 (为了在页面上显示不至于太大)
-            const maxWidth = 700; // 最大预览宽度
-            if (outputCanvas.width > maxWidth) {
-                outputCanvas.style.width = maxWidth + 'px';
-                outputCanvas.style.height = 'auto';
-            } else {
-                outputCanvas.style.width = 'auto';
-                outputCanvas.style.height = 'auto';
-            }
-
-            downloadBtn.disabled = false; // 预览成功后，下载按钮可用
-        }
-
-        // 下载带水印的图片
-        downloadBtn.addEventListener('click', function() {
-            if (originalImage) {
-                // 将 Canvas 内容转换为 Data URL
-                const dataURL = outputCanvas.toDataURL('image/png'); // 可以改为 'image/jpeg'
-
-                // 创建一个虚拟链接用于下载
-                const a = document.createElement('a');
-                a.href = dataURL;
-                a.download = `watermarked_image_${Date.now()}.png`; // 默认文件名
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
-        });
-
-        // 监听参数变化，实时更新水印预览
-        addWatermarkBtn.addEventListener('click', addWatermark);
-        fontSizeInput.addEventListener('change', addWatermark);
-        fontColorInput.addEventListener('change', addWatermark);
-        positionXInput.addEventListener('change', addWatermark);
-        positionYInput.addEventListener('change', addWatermark);
-        alignmentSelect.addEventListener('change', addWatermark);
-        watermarkTextCustom.addEventListener('input', addWatermark); // 输入时更新
-        setDateInput.addEventListener('change', addWatermark);
-        setTimeInput.addEventListener('change', addWatermark);
-    </script>
 
 </body>
 </html>
