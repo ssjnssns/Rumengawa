@@ -2,15 +2,281 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一份冬日的礼物</title>
     
-    <title>默认标题</title>
+    <style>
+        /* 全局样式 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden; /* 隐藏滚动条，防止动画溢出 */
+        }
+
+        /* 冬日仙境主容器 */
+        .winter-wonderland {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(180deg, #0f172a 0%, #302b63 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            overflow: hidden; /* 确保雪花在容器内 */
+        }
+
+        /* 文本内容 */
+        .content-wrapper {
+            z-index: 10;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+        }
+
+        /* 礼物盒样式 */
+        #gift-box {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            margin: 20px auto;
+            transition: transform 0.3s ease;
+            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        #gift-box:hover {
+            transform: scale(1.1);
+        }
+
+        /* 礼物盒跳动动画 */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* 气泡容器 */
+        #bubble-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 让气泡不影响点击 */
+            z-index: 5;
+        }
+
+        /* 气泡消息样式 */
+        .bubble {
+            position: absolute;
+            bottom: 100px; /* 从礼物盒附近开始 */
+            left: 50%; /* 默认从中间开始 */
+            
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            
+            font-size: 1.1rem;
+            white-space: nowrap;
+            
+            /* 核心：飘起动画 */
+            animation: floatUp 5s ease-out forwards;
+            opacity: 0;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* 气泡飘起动画 */
+        @keyframes floatUp {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 0) scale(0.5);
+            }
+            10% {
+                opacity: 1; /* 快速显现 */
+                transform: translate(-50%, -20px) scale(1);
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0;
+                /* 向上飘动很远，并且左右随机漂移 */
+                transform: translate(var(--random-x), -500px) scale(1.2);
+            }
+        }
+
+        /* 简单的淡入动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 雪花背景动画 */
+        .snow {
+            position: absolute;
+            top: -10px;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: fall 10s linear infinite;
+        }
+
+        /* 第二层雪花，不同延迟和速度 */
+        .snow:nth-child(2) {
+            width: 5px;
+            height: 5px;
+            animation-delay: 3s;
+            animation-duration: 8s;
+        }
+
+        /* 雪花飘落动画 */
+        @keyframes fall {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--random-snow-x, 100px), 100vh);
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="winter-wonderland">
+        <div class="snow"></div>
+        <div class="snow"></div>
 
-    <h1>你好，世界！</h1>
-    <p>这是一个基本的HTML页面。</p>
+        <div class="content-wrapper">
+            <h1>一份来自冬日的礼物</h1>
+            <p>请点开它，接收这份温暖</p>
 
+            <div id="gift-box" title="点击打开">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <path d="M10 30 H 90 V 40 H 10 Z" fill="#d9534f"/>
+                    <path d="M45 10 H 55 V 30 H 45 Z" fill="#f0ad4e"/>
+                    <path d="M40 20 H 60 V 30 H 40 Z" fill="#f0ad4e"/>
+                    <path d="M15 40 H 85 V 80 H 15 Z" fill="#d9534f"/>
+                    <path d="M45 40 H 55 V 80 H 45 Z" fill="#f0ad4e"/>
+                </svg>
+            </div>
+        </div>
+
+        <div id="bubble-container"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const giftBox = document.getElementById("gift-box");
+            const bubbleContainer = document.getElementById("bubble-container");
+
+            // 你可以添加任意多的温暖词汇
+            const warmWords = [
+                "温暖", "幸福", "平安", "快乐", "拥抱", "热可可",
+                "围巾", "壁炉", "手套", "祝福", "爱", "喜悦",
+                "感恩", "梦想", "希望", "阳光", "微笑", "甜蜜",
+                "晚安", "陪伴", "关心", "健康", "好运"
+            ];
+
+            // 温暖的颜色池
+            const warmColors = [
+                "#FFB6C1", // 浅粉红
+                "#FFDAB9", // 桃色
+                "#E6E6FA", // 薰衣草色
+                "#B0E0E6", // 粉蓝色
+                "#FFFACD", // 柠檬黄
+                "#F0E68C"  // 卡其色
+            ];
+            
+            // 雪花随机化
+            const snows = document.querySelectorAll(".snow");
+            snows.forEach(snow => {
+                snow.style.left = `${Math.random() * 100}vw`;
+                snow.style.setProperty('--random-snow-x', `${Math.random() * 200 - 100}px`);
+                snow.style.animationDelay = `${Math.random() * 10}s`;
+            });
+
+
+            // 当礼物被点击时触发
+            giftBox.addEventListener("click", () => {
+                
+                // 我们不只创建一个气泡，而是创建一股气泡流
+                let bubblesCreated = 0;
+                const totalBubbles = 30; // 一共创建30个气泡
+
+                const bubbleInterval = setInterval(() => {
+                    if (bubblesCreated >= totalBubbles) {
+                        clearInterval(bubbleInterval);
+                        return;
+                    }
+                    createBubble();
+                    bubblesCreated++;
+                }, 100); // 每100毫秒创建一个，制造“涌出”的效果
+            });
+
+            function createBubble() {
+                const bubble = document.createElement("div");
+                bubble.classList.add("bubble");
+
+                // 1. 设置随机文本
+                const word = warmWords[Math.floor(Math.random() * warmWords.length)];
+                bubble.textContent = word;
+
+                // 2. 设置随机颜色
+                const color = warmColors[Math.floor(Math.random() * warmColors.length)];
+                // 我们用颜色来设置边框色，背景保持半透明
+                bubble.style.borderColor = color;
+                bubble.style.color = color; // 也可以让文字同色
+                bubble.style.boxShadow = `0 0 10px ${color}`;
+
+                // 3. 设置随机动画属性
+                // 随机左右漂移
+                const randomX = `${Math.random() * 200 - 100}px`; // -100px 到 +100px
+                // 随机动画时长
+                const randomDuration = `${Math.random() * 2 + 4}s`; // 4秒到6秒
+                
+                bubble.style.setProperty('--random-x', randomX);
+                bubble.style.animationDuration = randomDuration;
+
+                // 4. 设置随机起始水平位置（礼物盒附近）
+                bubble.style.left = `${Math.random() * 20 + 40}%`; // 40% 到 60% 之间
+
+                // 5. 添加到容器
+                bubbleContainer.appendChild(bubble);
+
+                // 6. 动画结束后自动移除，保持页面整洁
+                bubble.addEventListener("animationend", () => {
+                    bubble.remove();
+                });
+            }
+        });
+    </script>
 </body>
 </html>
