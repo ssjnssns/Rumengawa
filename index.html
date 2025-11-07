@@ -2,866 +2,105 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>太空入侵者：增强版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时时间水印</title>
     <style>
-        body {
-            font-family: 'Press Start 2P', cursive, 'Pixelmix', Arial, sans-serif; /* 尝试使用像素字体 */
-            background-color: #0d0d1a;
-            color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        /* 1. 基础和页面样式 */
+        body, html {
             margin: 0;
-            height: 100vh;
-            overflow: hidden; /* 防止滚动条 */
-        }
-        @font-face { /* 引入像素字体，如果本地没有则用备用 */
-            font-family: 'Press Start 2P';
-            src: url('https://fonts.gstatic.com/s/pressstart2p/v14/8Lg6dHw-tglw6wJzF_Yqxfc6Yx99.woff2') format('woff2');
-            font-weight: 400;
-            font-style: normal;
-        }
-        h1 {
-            color: #6a5acd; /* 紫罗兰色 */
-            text-shadow: 0 0 15px #6a5acd, 0 0 30px #483d8b;
-            margin-bottom: 20px;
-            font-size: 2.5em;
-        }
-        #game-container {
-            border: 3px solid #6a5acd;
-            box-shadow: 0 0 25px rgba(106, 90, 205, 0.8), 0 0 50px rgba(72, 61, 139, 0.5);
-            position: relative;
-            background-color: #000; /* Canvas背景色，实际由滚动背景覆盖 */
-            overflow: hidden;
-        }
-        canvas {
-            display: block;
-            background-color: transparent; /* 让背景星空可见 */
-        }
-        #game-controls {
-            margin-top: 25px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap; /* 按钮过多时换行 */
-            justify-content: center;
-        }
-        button {
-            background-color: #3a3a5a;
-            color: #e0e0e0;
-            border: 2px solid #6a5acd;
-            padding: 12px 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
-            border-radius: 5px;
-            font-family: 'Press Start 2P', cursive, Arial, sans-serif;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-        }
-        button:hover {
-            background-color: #4a4a6a;
-            border-color: #8a7acd;
-            box-shadow: 0 0 15px rgba(138, 122, 205, 0.7);
-        }
-        button.active {
-            background-color: #d2691e; /* 巧克力色 */
-            border-color: #ff8c00; /* 暗橙色 */
-            box-shadow: 0 0 15px rgba(255, 140, 0, 0.8);
-        }
-        button#cheat-btn.active {
-            background-color: #a52a2a; /* 棕色 */
-            border-color: #ff4500; /* 橙红色 */
-            box-shadow: 0 0 15px rgba(255, 69, 0, 0.8);
-        }
-        #info-panel {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: #fff;
-            font-size: 1.1em;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-            line-height: 1.5;
-            z-index: 10;
-        }
-        #boss-health-bar {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 20px;
-            background-color: #555;
-            border: 2px solid #888;
-            border-radius: 5px;
-            overflow: hidden;
-            opacity: 0; /* 默认隐藏 */
-            transition: opacity 0.5s ease-in-out;
-            z-index: 10;
-        }
-        #boss-health-bar.active {
-            opacity: 1;
-        }
-        #boss-health-fill {
+            padding: 0;
             height: 100%;
-            background: linear-gradient(to right, #ff4500, #ff8c00);
-            width: 100%; /* 初始满血 */
-            transition: width 0.1s linear;
+            /* 使用更美观的系统默认字体，界面更协调 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
         }
-        #boss-name {
-            position: absolute;
-            top: -25px;
+        
+        /* 2. 内容容器 (你的图片或视频将在这里) */
+        .content-container {
+            /* 相对定位，这是让水印定位的关键 */
+            position: relative; 
             width: 100%;
-            text-align: center;
-            color: #ff4500;
-            font-size: 1.2em;
-            text-shadow: 0 0 10px #ff4500;
+            height: 100vh; /* 占满整个浏览器视口的高度 */
+            
+            /* --- 如何设置背景 ---
+               选择下面两种方式的一种
+            */
+
+            /* 方式 A: 像你的示例一样使用纯黑背景 */
+            background-color: #000000; 
+            
+            /* 方式 B: (可选) 如果你想放一张图片，请注释掉上面的 background-color，
+                       并取消注释下面三行，换上你自己的图片URL */
+            /*
+            background-image: url('https://images.unsplash.com/photo-1588392382834-a89115b1caad'); 
+            background-size: cover;
+            background-position: center;
+            */
         }
-        .star {
+        
+        /* 3. 时间水印的样式 */
+        .timestamp-overlay {
+            /* 绝对定位，让它浮动在 .content-container 之上 */
             position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            opacity: 0;
-            animation: twinkle 4s infinite ease-in-out;
-            z-index: -1;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 1; }
+            
+            /* --- 定位 --- */
+            /* 定位在底部中心，和你的图片示例一致 */
+            bottom: 20px; /* 距离底部 20px (你可以修改) */
+            left: 50%;   /* 先移动到中心线 */
+            transform: translateX(-50%); /* 再向左移动自身宽度的50%，实现完美居中 */
+            
+            /* --- 文本样式 --- */
+            color: white;
+            font-size: 16px; /* 字体大小 (你可以修改) */
+            
+            /* (可选) 如果你的背景图片很亮或很花，
+               可以取消注释下面这行，增加文字阴影，使其更清晰 */
+            /* text-shadow: 0 0 5px rgba(0, 0, 0, 0.7); */
+            
+            /* 确保水印在内容之上 */
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <h1>🚀 太空入侵者：增强版 👽</h1>
-    
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="info-panel">
-            分数: <span id="score-display">0</span><br>
-            生命: <span id="lives-display">3</span>
-        </div>
-        <div id="boss-health-bar">
-            <div id="boss-name">领主 基尔加丹</div>
-            <div id="boss-health-fill"></div>
-        </div>
-    </div>
-    
-    <div id="game-controls">
-        <button id="start-btn">开始游戏</button>
-        <button id="mode-select">模式: 普通</button>
-        <button id="cheat-btn">作弊模式 (关)</button>
+    <div class="content-container">
+        
+        <div class="timestamp-overlay" id="real-time-stamp">
+            </div>
+        
     </div>
 
     <script>
-        // --- 画布和上下文 ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // 获取用于显示时间的HTML元素
+        const timestampElement = document.getElementById('real-time-stamp');
 
-        // --- DOM元素 ---
-        const scoreDisplay = document.getElementById('score-display');
-        const livesDisplay = document.getElementById('lives-display');
-        const startBtn = document.getElementById('start-btn');
-        const modeSelectBtn = document.getElementById('mode-select');
-        const cheatBtn = document.getElementById('cheat-btn');
-        const bossHealthBar = document.getElementById('boss-health-bar');
-        const bossHealthFill = document.getElementById('boss-health-fill');
-
-        // --- 游戏常量和配置 ---
-        const GAME_WIDTH = canvas.width;
-        const GAME_HEIGHT = canvas.height;
-        const PLAYER_COLOR = '#00ffff'; // 青色
-        const ENEMY_COLORS = ['#ff0000', '#ffa500', '#ffff00']; // 红、橙、黄
-        const BULLET_COLOR = '#00ff00'; // 绿色
-        const ENEMY_BULLET_COLOR = '#ff00ff'; // 品红色
-        const POWERUP_COLOR = '#ffffff'; // 白色
-        const BOSS_COLOR = '#8b008b'; // 暗紫色
-
-        const GAME_STATE = {
-            MENU: 'menu',
-            PLAYING: 'playing',
-            GAME_OVER: 'gameOver',
-            WIN: 'win'
-        };
-
-        // --- 游戏变量 ---
-        let currentState = GAME_STATE.MENU;
-        let score = 0;
-        let lives = 3;
-        let gameMode = 'normal'; // 'normal', 'hard'
-        let isCheating = false;
-
-        let player;
-        let bullets = [];         // 玩家子弹
-        let enemyBullets = [];    // 敌人子弹和Boss子弹
-        let enemies = [];
-        let powerups = [];
-        let boss = null;
-        let stars = [];           // 背景星星
-        let starScrollOffset = 0;
-
-        let keys = {}; // 存储按键状态
-
-        let enemySpawnTimer = 0;
-        let enemySpawnInterval = 120; // 帧数
-        let currentWave = 0;
-        const BOSS_TRIGGER_SCORE = 5000; // 达到此分数触发Boss
-
-        // 玩家能力
-        let playerAbility = {
-            rapidFire: false,
-            multiShot: false,
-            invincible: false,
-            oneHitKill: false, // 作弊模式
-            rapidFireTimer: 0,
-            multiShotTimer: 0
-        };
-
-        // --- 游戏对象类 ---
-
-        class Entity {
-            constructor(x, y, width, height, color, speed) {
-                this.x = x;
-                this.y = y;
-                this.width = width;
-                this.height = height;
-                this.color = color;
-                this.speed = speed;
-                this.markedForDeletion = false;
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-        }
-
-        class Player extends Entity {
-            constructor() {
-                super(GAME_WIDTH / 2 - 25, GAME_HEIGHT - 60, 50, 50, PLAYER_COLOR, 6);
-                this.cooldown = 0;
-                this.maxCooldown = 20; // 正常射击间隔
-            }
-
-            update() {
-                if (keys['ArrowLeft'] && this.x > 0) this.x -= this.speed;
-                if (keys['ArrowRight'] && this.x < GAME_WIDTH - this.width) this.x += this.speed;
-                if (keys['ArrowUp'] && this.y > GAME_HEIGHT / 2) this.y -= this.speed; // 限制Y轴移动范围
-                if (keys['ArrowDown'] && this.y < GAME_HEIGHT - this.height) this.y += this.speed;
-
-
-                if (this.cooldown > 0) this.cooldown--;
-
-                let currentShotCooldown = playerAbility.rapidFire ? 7 : this.maxCooldown;
-                if (isCheating && playerAbility.rapidFire) currentShotCooldown = 3; // 作弊模式下更快
-
-                if ((keys[' '] || keys['Spacebar']) && this.cooldown === 0) {
-                    if (playerAbility.multiShot) {
-                        bullets.push(new Bullet(this.x + this.width / 2 - 2.5, this.y, 0, -10)); // 中
-                        bullets.push(new Bullet(this.x + this.width / 2 - 15, this.y, -3, -10)); // 左
-                        bullets.push(new Bullet(this.x + this.width / 2 + 10, this.y, 3, -10));  // 右
-                    } else {
-                        bullets.push(new Bullet(this.x + this.width / 2 - 2.5, this.y, 0, -10));
-                    }
-                    this.cooldown = currentShotCooldown;
-                }
-                
-                // 更新能力计时器
-                if (playerAbility.rapidFireTimer > 0) playerAbility.rapidFireTimer--;
-                else playerAbility.rapidFire = false;
-
-                if (playerAbility.multiShotTimer > 0) playerAbility.multiShotTimer--;
-                else playerAbility.multiShot = false;
-            }
-
-            draw(ctx) {
-                // 绘制一个尖头飞船
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(this.x + this.width / 2, this.y); // 顶部尖点
-                ctx.lineTo(this.x, this.y + this.height);    // 左下角
-                ctx.lineTo(this.x + this.width / 2, this.y + this.height * 0.8); // 底部凹槽中间
-                ctx.lineTo(this.x + this.width, this.y + this.height); // 右下角
-                ctx.closePath();
-                ctx.fill();
-
-                // 底部喷射器火焰效果
-                ctx.fillStyle = '#ff8c00'; // 橙色
-                ctx.beginPath();
-                ctx.moveTo(this.x + this.width * 0.2, this.y + this.height);
-                ctx.lineTo(this.x + this.width * 0.8, this.y + this.height);
-                ctx.lineTo(this.x + this.width / 2, this.y + this.height + 15);
-                ctx.closePath();
-                ctx.fill();
-
-                if (playerAbility.invincible) {
-                    ctx.strokeStyle = '#ffff00';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.8, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
-            }
-        }
-
-        class Bullet extends Entity {
-            constructor(x, y, vx, vy) {
-                super(x, y, 5, 15, BULLET_COLOR, Math.abs(vy));
-                this.vx = vx;
-                this.vy = vy;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.y < -this.height || this.y > GAME_HEIGHT || this.x < -this.width || this.x > GAME_WIDTH) {
-                    this.markedForDeletion = true;
-                }
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.shadowColor = this.color;
-                ctx.shadowBlur = 10;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.shadowBlur = 0; // 及时关闭阴影
-            }
-        }
-
-        class EnemyBullet extends Bullet {
-            constructor(x, y, vx, vy) {
-                super(x, y, vx, vy);
-                this.color = ENEMY_BULLET_COLOR;
-            }
-        }
-
-        class Enemy extends Entity {
-            constructor(x, y, speed, type) {
-                // type 0: 弱 (红), 1: 中 (橙), 2: 强 (黄)
-                const width = 40;
-                const height = 30;
-                super(x, y, width, height, ENEMY_COLORS[type], speed);
-                this.health = type + 1; // 对应生命值
-                this.shotCooldown = Math.random() * 100 + 100; // 射击间隔
-                this.movingLeft = Math.random() > 0.5; // 初始移动方向
-                this.xMovementSpeed = speed * 0.5;
-                this.yMovementSpeed = speed * 0.1;
-                this.scoreValue = (type + 1) * 50;
-            }
-
-            update() {
-                // 左右移动
-                if (this.movingLeft) {
-                    this.x -= this.xMovementSpeed;
-                    if (this.x < 0) {
-                        this.movingLeft = false;
-                        this.x = 0;
-                    }
-                } else {
-                    this.x += this.xMovementSpeed;
-                    if (this.x > GAME_WIDTH - this.width) {
-                        this.movingLeft = false;
-                        this.x = GAME_WIDTH - this.width;
-                    }
-                }
-                
-                // 缓慢向下移动
-                this.y += this.yMovementSpeed;
-
-                // 射击
-                if (this.shotCooldown <= 0) {
-                    if (Math.random() < 0.02 * (gameMode === 'hard' ? 2 : 1)) { // 困难模式射击几率更高
-                        enemyBullets.push(new EnemyBullet(this.x + this.width / 2 - 2.5, this.y + this.height, 0, 5));
-                    }
-                    this.shotCooldown = Math.random() * 200 + 100;
-                } else {
-                    this.shotCooldown--;
-                }
-
-                if (this.y > GAME_HEIGHT) {
-                    this.markedForDeletion = true; // 飞出屏幕
-                }
-            }
-
-            draw(ctx) {
-                // 绘制一个外星飞船形状
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.ellipse(this.x + this.width / 2, this.y + this.height * 0.6, this.width / 2, this.height * 0.4, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y + this.height * 0.6);
-                ctx.lineTo(this.x + this.width / 2, this.y);
-                ctx.lineTo(this.x + this.width, this.y + this.height * 0.6);
-                ctx.fill();
-
-                // 眼睛
-                ctx.fillStyle = '#fff';
-                ctx.beginPath();
-                ctx.arc(this.x + this.width * 0.3, this.y + this.height * 0.4, 3, 0, Math.PI * 2);
-                ctx.arc(this.x + this.width * 0.7, this.y + this.height * 0.4, 3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        class Boss extends Entity {
-            constructor() {
-                super(GAME_WIDTH / 2 - 75, 50, 150, 100, BOSS_COLOR, 1.5);
-                this.maxHealth = 50 + (gameMode === 'hard' ? 50 : 0);
-                this.health = this.maxHealth;
-                this.shotCooldown = 60;
-                this.moveTimer = 0;
-                this.moveDirection = 1; // 1:右, -1:左
-                this.scoreValue = 5000;
-            }
-
-            update() {
-                // 左右移动
-                this.x += this.speed * this.moveDirection;
-                if (this.x < 0 || this.x > GAME_WIDTH - this.width) {
-                    this.moveDirection *= -1;
-                }
-
-                // 射击 (多向子弹)
-                if (this.shotCooldown <= 0) {
-                    // 中心射击
-                    enemyBullets.push(new EnemyBullet(this.x + this.width / 2 - 2.5, this.y + this.height, 0, 7));
-                    // 斜向射击
-                    enemyBullets.push(new EnemyBullet(this.x + this.width / 2 - 30, this.y + this.height, -2, 7));
-                    enemyBullets.push(new EnemyBullet(this.x + this.width / 2 + 25, this.y + this.height, 2, 7));
-                    this.shotCooldown = 60 + (gameMode === 'hard' ? 0 : 30); // 困难模式射速更快
-                } else {
-                    this.shotCooldown--;
-                }
-                
-                // 更新血条UI
-                bossHealthFill.style.width = `${(this.health / this.maxHealth) * 100}%`;
-                if (!bossHealthBar.classList.contains('active')) {
-                    bossHealthBar.classList.add('active');
-                }
-            }
-
-            draw(ctx) {
-                // 绘制一个更复杂的Boss飞船
-                ctx.fillStyle = this.color;
-                ctx.shadowColor = BOSS_COLOR;
-                ctx.shadowBlur = 20;
-
-                // 主体
-                ctx.beginPath();
-                ctx.moveTo(this.x + this.width / 2, this.y);
-                ctx.lineTo(this.x, this.y + this.height * 0.8);
-                ctx.lineTo(this.x + this.width * 0.2, this.y + this.height);
-                ctx.lineTo(this.x + this.width * 0.8, this.y + this.height);
-                ctx.lineTo(this.x + this.width, this.y + this.height * 0.8);
-                ctx.closePath();
-                ctx.fill();
-
-                // 眼睛/核心
-                ctx.fillStyle = '#ff0000'; // 红色核心
-                ctx.beginPath();
-                ctx.arc(this.x + this.width / 2, this.y + this.height * 0.5, 15, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-
-                // 小炮台
-                ctx.fillStyle = '#4b0082'; // 靛青色
-                ctx.fillRect(this.x + this.width * 0.1, this.y + this.height * 0.9, 10, 15);
-                ctx.fillRect(this.x + this.width * 0.9 - 10, this.y + this.height * 0.9, 10, 15);
-            }
-        }
-
-        class PowerUp extends Entity {
-            constructor(x, y, type) {
-                super(x, y, 20, 20, POWERUP_COLOR, 2);
-                this.type = type; // 'rapidFire', 'multiShot', 'health'
-                this.color = this.getTypeColor();
-            }
-
-            getTypeColor() {
-                switch (this.type) {
-                    case 'rapidFire': return '#ff00ff'; // 品红色
-                    case 'multiShot': return '#00ff00'; // 绿色
-                    case 'health': return '#ff0000';    // 红色
-                    default: return POWERUP_COLOR;
-                }
-            }
-
-            update() {
-                this.y += this.speed;
-                if (this.y > GAME_HEIGHT) {
-                    this.markedForDeletion = true;
-                }
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.shadowColor = this.color;
-                ctx.shadowBlur = 15;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        // --- 初始化游戏 ---
-        function initGame() {
-            score = 0;
-            lives = 3;
-            player = new Player();
-            bullets = [];
-            enemyBullets = [];
-            enemies = [];
-            powerups = [];
-            boss = null;
-            currentWave = 0;
-            enemySpawnTimer = 0;
-
-            // 重置玩家能力
-            playerAbility = {
-                rapidFire: isCheating,
-                multiShot: false,
-                invincible: isCheating,
-                oneHitKill: isCheating,
-                rapidFireTimer: 0,
-                multiShotTimer: 0
-            };
+        // 定义一个函数，用于获取和格式化当前时间
+        function updateTimestamp() {
+            const now = new Date();
             
-            // 隐藏Boss血条
-            bossHealthBar.classList.remove('active');
-
-            currentState = GAME_STATE.PLAYING;
-            updateUI();
-            generateStars();
-        }
-
-        // --- 生成背景星星 ---
-        function generateStars() {
-            stars = [];
-            for (let i = 0; i < 100; i++) {
-                stars.push({
-                    x: Math.random() * GAME_WIDTH,
-                    y: Math.random() * GAME_HEIGHT,
-                    size: Math.random() * 2 + 1,
-                    speed: Math.random() * 0.5 + 0.1 // 不同的速度制造景深
-                });
-            }
-        }
-
-        // --- 更新游戏状态 ---
-        function update() {
-            if (currentState !== GAME_STATE.PLAYING) return;
-
-            // 更新背景星星
-            starScrollOffset += 0.5;
-            if (starScrollOffset >= GAME_HEIGHT) starScrollOffset = 0;
-
-            stars.forEach(star => {
-                star.y += star.speed;
-                if (star.y > GAME_HEIGHT) {
-                    star.y = 0;
-                    star.x = Math.random() * GAME_WIDTH;
-                }
-            });
-
-            player.update();
-
-            // 更新玩家子弹
-            bullets.forEach(bullet => bullet.update());
-            bullets = bullets.filter(bullet => !bullet.markedForDeletion);
-
-            // 更新敌人
-            enemies.forEach(enemy => enemy.update());
-            enemies = enemies.filter(enemy => !enemy.markedForDeletion);
-
-            // 更新敌方子弹
-            enemyBullets.forEach(bullet => bullet.update());
-            enemyBullets = enemyBullets.filter(bullet => !bullet.markedForDeletion);
-
-            // 更新道具
-            powerups.forEach(powerup => powerup.update());
-            powerups = powerups.filter(powerup => !powerup.markedForDeletion);
-
-            // Boss更新
-            if (boss) {
-                boss.update();
-                if (boss.health <= 0) {
-                    score += boss.scoreValue;
-                    boss.markedForDeletion = true;
-                    boss = null;
-                    bossHealthBar.classList.remove('active'); // 隐藏血条
-                    gameWin();
-                    return;
-                }
-            }
-
-
-            // 敌人生成 (如果Boss不存在)
-            if (!boss) {
-                enemySpawnTimer++;
-                if (enemySpawnTimer >= enemySpawnInterval) {
-                    if (score < BOSS_TRIGGER_SCORE) { // 达到Boss分数前持续刷怪
-                        spawnWave();
-                        enemySpawnTimer = 0;
-                        enemySpawnInterval = Math.max(60, enemySpawnInterval - 5); // 逐渐加快刷怪速度
-                    } else if (enemies.length === 0 && !boss) {
-                        // 触发Boss战
-                        boss = new Boss();
-                        enemySpawnInterval = 999999; // 停止刷小怪
-                    }
-                }
-            }
+            const year = now.getFullYear();
+            // getMonth() 返回 0 (一月) 到 11 (十二月), 所以需要 +1
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
             
-
-            // --- 碰撞检测 ---
-
-            // 玩家子弹与敌人
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                for (let j = enemies.length - 1; j >= 0; j--) {
-                    if (checkCollision(bullets[i], enemies[j])) {
-                        bullets[i].markedForDeletion = true;
-                        if (playerAbility.oneHitKill) {
-                            enemies[j].health = 0; // 一击必杀
-                        } else {
-                             enemies[j].health--;
-                        }
-                       
-                        if (enemies[j].health <= 0) {
-                            score += enemies[j].scoreValue;
-                            enemies[j].markedForDeletion = true;
-                            // 随机掉落道具
-                            if (Math.random() < 0.15) { // 15% 几率掉落
-                                const type = ['rapidFire', 'multiShot', 'health'][Math.floor(Math.random() * 3)];
-                                powerups.push(new PowerUp(enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, type));
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // 玩家子弹与Boss
-            if (boss) {
-                for (let i = bullets.length - 1; i >= 0; i--) {
-                    if (checkCollision(bullets[i], boss)) {
-                        bullets[i].markedForDeletion = true;
-                        if (playerAbility.oneHitKill) {
-                            boss.health -= 10; // Boss不能一击必杀，但受更多伤害
-                        } else {
-                            boss.health--;
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // 敌方子弹与玩家
-            if (!playerAbility.invincible) { // 玩家无敌时不受伤
-                for (let i = enemyBullets.length - 1; i >= 0; i--) {
-                    if (checkCollision(enemyBullets[i], player)) {
-                        enemyBullets[i].markedForDeletion = true;
-                        lives--;
-                        if (lives <= 0) {
-                            gameOver();
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // 敌人与玩家
-            if (!playerAbility.invincible) {
-                for (let j = enemies.length - 1; j >= 0; j--) {
-                    if (checkCollision(player, enemies[j])) {
-                        enemies[j].markedForDeletion = true; // 敌人撞到玩家就消失
-                        lives--;
-                        if (lives <= 0) {
-                            gameOver();
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // 玩家与道具
-            for (let i = powerups.length - 1; i >= 0; i--) {
-                if (checkCollision(player, powerups[i])) {
-                    activatePowerUp(powerups[i].type);
-                    powerups[i].markedForDeletion = true;
-                }
-            }
-
-            updateUI();
+            // 拼接成你想要的格式: 2025年11月07日 12:02
+            const timestampString = `${year}年${month}月${day}日 ${hours}:${minutes}`;
+            
+            // 将格式化后的时间字符串更新到HTML元素中
+            timestampElement.textContent = timestampString;
         }
 
-        // --- 生成一波敌人 ---
-        function spawnWave() {
-            currentWave++;
-            const numEnemies = Math.min(15, 5 + Math.floor(currentWave / 2));
-            for (let i = 0; i < numEnemies; i++) {
-                const enemyType = Math.floor(Math.random() * 3); // 随机生成不同类型的敌人
-                const speed = (gameMode === 'hard' ? 1.5 : 1) * (1 + currentWave * 0.1);
-                enemies.push(new Enemy(Math.random() * (GAME_WIDTH - 60) + 30, Math.random() * 100 - 150, speed, enemyType));
-            }
-        }
+        // --- 运行 ---
 
-        // --- 激活道具效果 ---
-        function activatePowerUp(type) {
-            switch (type) {
-                case 'rapidFire':
-                    playerAbility.rapidFire = true;
-                    playerAbility.rapidFireTimer = 60 * 5; // 持续5秒
-                    break;
-                case 'multiShot':
-                    playerAbility.multiShot = true;
-                    playerAbility.multiShotTimer = 60 * 7; // 持续7秒
-                    break;
-                case 'health':
-                    lives = Math.min(5, lives + 1); // 最多5点生命
-                    break;
-            }
-        }
-
-        // --- 碰撞检测函数 ---
-        function checkCollision(rect1, rect2) {
-            return rect1.x < rect2.x + rect2.width &&
-                   rect1.x + rect1.width > rect2.x &&
-                   rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
-        }
-
-        // --- 绘制游戏 ---
-        function draw() {
-            // 清空画布
-            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-            // 绘制背景星星
-            ctx.fillStyle = '#fff';
-            stars.forEach(star => {
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size / 2, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // 绘制所有实体
-            player.draw(ctx);
-            bullets.forEach(bullet => bullet.draw(ctx));
-            enemyBullets.forEach(bullet => bullet.draw(ctx));
-            enemies.forEach(enemy => enemy.draw(ctx));
-            powerups.forEach(powerup => powerup.draw(ctx));
-            if (boss) boss.draw(ctx);
-
-            // 根据游戏状态绘制特定UI
-            if (currentState === GAME_STATE.MENU) {
-                drawOverlay('太空入侵者', '按 "开始游戏" 进入战场', '#6a5acd');
-            } else if (currentState === GAME_STATE.GAME_OVER) {
-                drawOverlay('游戏结束', `分数: ${score} - 按 "开始游戏" 重试`, '#ff4500');
-            } else if (currentState === GAME_STATE.WIN) {
-                drawOverlay('胜利!', `分数: ${score} - 恭喜你击败了领主!`, '#00ff00');
-            }
-        }
-
-        // --- 绘制覆盖层文本 ---
-        function drawOverlay(title, message, color) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            ctx.fillStyle = color;
-            ctx.font = 'bold 48px "Press Start 2P"';
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 20;
-            ctx.fillText(title, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40);
-
-            ctx.fillStyle = '#e0e0e0';
-            ctx.font = '20px "Press Start 2P"';
-            ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 10;
-            ctx.fillText(message, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20);
-
-            ctx.shadowBlur = 0; // 重置阴影
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'alphabetic';
-        }
-
-        // --- 游戏结束 / 胜利 ---
-        function gameOver() {
-            currentState = GAME_STATE.GAME_OVER;
-        }
-
-        function gameWin() {
-            currentState = GAME_STATE.WIN;
-        }
-
-        // --- 更新UI显示 ---
-        function updateUI() {
-            scoreDisplay.textContent = score;
-            livesDisplay.textContent = lives;
-        }
-
-        // --- 主游戏循环 ---
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // --- 事件监听 ---
-        document.addEventListener('keydown', e => { keys[e.key] = true; });
-        document.addEventListener('keyup', e => { keys[e.key] = false; });
-
-        startBtn.addEventListener('click', () => {
-            if (currentState === GAME_STATE.MENU || currentState === GAME_STATE.GAME_OVER || currentState === GAME_STATE.WIN) {
-                initGame();
-            }
-        });
-
-        modeSelectBtn.addEventListener('click', () => {
-            if (gameMode === 'normal') {
-                gameMode = 'hard';
-                modeSelectBtn.textContent = '模式: 困难';
-                modeSelectBtn.classList.add('active');
-            } else {
-                gameMode = 'normal';
-                modeSelectBtn.textContent = '模式: 普通';
-                modeSelectBtn.classList.remove('active');
-            }
-            // 如果在菜单界面，则更新难度显示，否则等待下次游戏
-            if (currentState === GAME_STATE.MENU) {
-                // 不做额外处理，因为initGame会根据mode重新设置
-            }
-        });
-
-        cheatBtn.addEventListener('click', () => {
-            isCheating = !isCheating;
-            if (isCheating) {
-                cheatBtn.textContent = '作弊模式 (开)';
-                cheatBtn.classList.add('active');
-                // 立即激活作弊能力
-                playerAbility.invincible = true;
-                playerAbility.rapidFire = true;
-                playerAbility.oneHitKill = true;
-            } else {
-                cheatBtn.textContent = '作弊模式 (关)';
-                cheatBtn.classList.remove('active');
-                // 关闭作弊能力
-                playerAbility.invincible = false;
-                playerAbility.rapidFire = false;
-                playerAbility.oneHitKill = false;
-            }
-            // 作弊模式不重置计时器，只开关能力
-            playerAbility.rapidFireTimer = 0;
-            playerAbility.multiShotTimer = 0;
-        });
+        // 1. 页面加载时立即运行一次，避免刚打开时出现空白
+        updateTimestamp();
         
-        // --- 启动游戏 ---
-        // 确保DOM加载完成后再开始
-        window.onload = () => {
-            generateStars(); // 预生成星空
-            gameLoop(); // 开始游戏循环
-        };
-
+        // 2. 设置一个定时器，每分钟 (60000毫秒) 更新一次时间
+        // (因为你的示例只显示到分钟，所以每分钟更新一次效率最高)
+        setInterval(updateTimestamp, 60000); 
     </script>
+
 </body>
 </html>
